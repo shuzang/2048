@@ -8,13 +8,53 @@ import (
 
 // game board size
 const rows, cols = 4, 4
+const _clearScreenSequence = "\033[H\033[2J"
 
 type Board interface {
 	Display()
+	AddElement()
 }
 
 type board struct {
 	matrix [][]int
+}
+
+func (b board) AddElement() {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	// generate new element
+	val := r.Int() % 100
+	if val < 70 {
+		val = 2
+	} else {
+		val = 4
+	}
+
+	// count empty postions
+	emptyCount := 0
+	for i := 0; i < rows; i++ {
+		for j := 0; j < cols; j++ {
+			if b.matrix[i][j] == 0 {
+				emptyCount++
+			}
+		}
+	}
+
+	// generate the element position to be filled
+	elementCount := r.Int()%emptyCount + 1
+	index := 0
+
+	// fill
+	for i := 0; i < rows; i++ {
+		for j := 0; j < cols; j++ {
+			if b.matrix[i][j] == 0 {
+				index++
+				if index == elementCount {
+					b.matrix[i][j] = val
+					return
+				}
+			}
+		}
+	}
 }
 
 /* Display board as follows
@@ -29,7 +69,8 @@ type board struct {
 ------------------------------------------------
 */
 func (b board) Display() {
-	b.matrix = getRandom()
+	fmt.Println(_clearScreenSequence)
+	//b.matrix = getRandom()
 	printHorizontal()
 	for i := 0; i < len(b.matrix); i++ {
 		for j := 0; j < len(b.matrix[0]); j++ {
@@ -84,6 +125,10 @@ func getRandom() [][]int {
 	return board
 }
 
-func New() Board {
-	return &board{}
+func New() *board {
+	matrix := make([][]int, rows)
+	for i := 0; i < rows; i++ {
+		matrix[i] = make([]int, cols)
+	}
+	return &board{matrix}
 }

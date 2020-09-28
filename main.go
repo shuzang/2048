@@ -9,5 +9,9 @@ import (
 func main() {
 	fmt.Println("Getting started!")
 	g := game.New()
-	g.Display()
+	for i := 0; i < 10; i++ {
+		g.Display()
+		g.AddElement()
+		fmt.Println("new game")
+	}
 }
