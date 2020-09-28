@@ -12,6 +12,7 @@ func main() {
 	for i := 0; i < 10; i++ {
 		g.Display()
 		g.AddElement()
+		g.TakeInput()
 		fmt.Println("new game")
 	}
 }

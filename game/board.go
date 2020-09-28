@@ -13,10 +13,17 @@ const _clearScreenSequence = "\033[H\033[2J"
 type Board interface {
 	Display()
 	AddElement()
+	TakeInput()
 }
 
 type board struct {
 	matrix [][]int
+}
+
+func (b board) TakeInput() {
+	var char rune
+	fmt.Scanf("%c", &char)
+	fmt.Printf("keyboar input is: %v\n", char)
 }
 
 func (b board) AddElement() {
