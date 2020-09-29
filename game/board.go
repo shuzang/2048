@@ -16,10 +16,23 @@ type Board interface {
 	Display()
 	AddElement()
 	TakeInput()
+	IsOver()
 }
 
 type board struct {
 	matrix [][]int
+}
+
+func (b *board) IsOver() bool {
+	emptyCount := 0
+	for i := 0; i < rows; i++ {
+		for j := 0; j < cols; j++ {
+			if b.matrix[i][j] == 0 {
+				emptyCount++
+			}
+		}
+	}
+	return emptyCount == 0
 }
 
 func (b *board) TakeInput() {
@@ -38,14 +51,14 @@ func (b *board) TakeInput() {
 	case 's', 40:
 		b.moveDown()
 	}
-	fmt.Printf("Input char is: %v\n", input[0])
+	fmt.Printf("Input char is: %c(%v)\n", input[0], input[0])
 }
 
 func (b *board) moveLeft() {
 	for i := 0; i < rows; i++ {
 		old := b.matrix[i]
 		b.matrix[i] = moveRow(old)
-		fmt.Printf("updated row is: %v || old row is: %v\n", b.matrix[i], old)
+		//fmt.Printf("updated row is: %v || old row is: %v\n", b.matrix[i], old)
 	}
 }
 
@@ -55,13 +68,13 @@ func (b *board) moveRight() {
 	b.reverse()
 }
 
-func (b *board) moveDown() {
+func (b *board) moveUp() {
 	b.rightRotate90()
 	b.moveLeft()
 	b.leftRotate90()
 }
 
-func (b *board) moveUp() {
+func (b *board) moveDown() {
 	b.leftRotate90()
 	b.moveLeft()
 	b.rightRotate90()
@@ -95,7 +108,7 @@ func (b *board) leftRotate90() {
 
 func (b *board) reverse() {
 	for i := 0; i < rows; i++ {
-		for j, k := 0, cols; j < k; j, k = j+1, k-1 {
+		for j, k := 0, cols-1; j < k; j, k = j+1, k-1 {
 			b.matrix[i][j], b.matrix[i][k] = b.matrix[i][k], b.matrix[i][j]
 		}
 	}
@@ -113,17 +126,18 @@ func moveRow(elems []int) []int {
 }
 
 func mergeElements(arr []int) []int {
+	newArr := make([]int, len(arr))
+	newArr[0] = arr[0]
 	index := 0
 	for i := 1; i < len(arr); i++ {
-		if arr[i] == arr[index] {
-			arr[index] += arr[i]
+		if arr[i] == newArr[index] {
+			newArr[index] += arr[i]
 		} else {
 			index++
-			arr[index] = arr[i]
+			newArr[index] = arr[i]
 		}
-		arr[i] = 0
 	}
-	return arr
+	return newArr
 }
 
 func (b *board) AddElement() {
@@ -176,7 +190,7 @@ func (b *board) AddElement() {
 ------------------------------------------------
 */
 func (b *board) Display() {
-	fmt.Println(_clearScreenSequence)
+	//fmt.Println(_clearScreenSequence)
 	//b.matrix = getRandom()
 	printHorizontal()
 	for i := 0; i < len(b.matrix); i++ {
