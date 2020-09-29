@@ -1,8 +1,10 @@
 package game
 
 import (
+	"bufio"
 	"fmt"
 	"math/rand"
+	"os"
 	"time"
 )
 
@@ -21,9 +23,67 @@ type board struct {
 }
 
 func (b board) TakeInput() {
-	var char rune
-	fmt.Scanf("%c", &char)
-	fmt.Printf("keyboar input is: %v\n", char)
+	/* 	var char rune
+	   	fmt.Scanf("%c", &char)
+	   	fmt.Printf("keyboar input is: %v\n", char) */
+	reader := bufio.NewReader(os.Stdin)
+	input, _ := reader.ReadString('\n')
+	switch input[0] {
+	case 'a':
+		b.move(LEFT)
+	case 'd':
+		b.move(RIGHT)
+	case 'w':
+		b.move(UP)
+	case 's':
+		b.move(DOWN)
+	}
+	fmt.Printf("Input char is: %v\n", input[0])
+}
+
+type Dir int
+
+const (
+	UP Dir = iota
+	DOWN
+	LEFT
+	RIGHT
+)
+
+func (b *board) move(dir Dir) {
+	if dir != LEFT {
+		return
+	}
+	for i := 0; i < rows; i++ {
+		old := b.matrix[i]
+		b.matrix[i] = moveRow(old)
+		fmt.Printf("updated row is: %v || old row is: %v\n", b.matrix[i], old)
+	}
+}
+
+func moveRow(elems []int) []int {
+	index := 0
+	for i := 0; i < cols; i++ {
+		if elems[i] != 0 {
+			elems[index], elems[i] = elems[i], elems[index]
+			index++
+		}
+	}
+	return mergeElements(elems)
+}
+
+func mergeElements(arr []int) []int {
+	index := 0
+	for i := 1; i < len(arr); i++ {
+		if arr[i] == arr[index] {
+			arr[index] += arr[i]
+		} else {
+			index++
+			arr[index] = arr[i]
+		}
+		arr[i] = 0
+	}
+	return arr
 }
 
 func (b board) AddElement() {
