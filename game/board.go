@@ -22,42 +22,82 @@ type board struct {
 	matrix [][]int
 }
 
-func (b board) TakeInput() {
+func (b *board) TakeInput() {
 	/* 	var char rune
 	   	fmt.Scanf("%c", &char)
 	   	fmt.Printf("keyboar input is: %v\n", char) */
 	reader := bufio.NewReader(os.Stdin)
 	input, _ := reader.ReadString('\n')
 	switch input[0] {
-	case 'a':
-		b.move(LEFT)
-	case 'd':
-		b.move(RIGHT)
-	case 'w':
-		b.move(UP)
-	case 's':
-		b.move(DOWN)
+	case 'a', 37:
+		b.moveLeft()
+	case 'd', 39:
+		b.moveRight()
+	case 'w', 38:
+		b.moveUp()
+	case 's', 40:
+		b.moveDown()
 	}
 	fmt.Printf("Input char is: %v\n", input[0])
 }
 
-type Dir int
-
-const (
-	UP Dir = iota
-	DOWN
-	LEFT
-	RIGHT
-)
-
-func (b *board) move(dir Dir) {
-	if dir != LEFT {
-		return
-	}
+func (b *board) moveLeft() {
 	for i := 0; i < rows; i++ {
 		old := b.matrix[i]
 		b.matrix[i] = moveRow(old)
 		fmt.Printf("updated row is: %v || old row is: %v\n", b.matrix[i], old)
+	}
+}
+
+func (b *board) moveRight() {
+	b.reverse()
+	b.moveLeft()
+	b.reverse()
+}
+
+func (b *board) moveDown() {
+	b.rightRotate90()
+	b.moveLeft()
+	b.leftRotate90()
+}
+
+func (b *board) moveUp() {
+	b.leftRotate90()
+	b.moveLeft()
+	b.rightRotate90()
+}
+
+func (b *board) rightRotate90() {
+	res := make([][]int, rows)
+	for i := 0; i < rows; i++ {
+		res[i] = make([]int, cols)
+	}
+	for i := 0; i < rows; i++ {
+		for j := 0; j < cols; j++ {
+			res[cols-j-1][i] = b.matrix[i][j]
+		}
+	}
+	b.matrix = res
+}
+
+func (b *board) leftRotate90() {
+	res := make([][]int, rows)
+	for i := 0; i < rows; i++ {
+		res[i] = make([]int, cols)
+	}
+	for i := 0; i < rows; i++ {
+		for j := 0; j < cols; j++ {
+			res[j][rows-i-1] = b.matrix[i][j]
+		}
+	}
+	b.matrix = res
+}
+
+func (b *board) reverse() {
+	for i := 0; i < rows; i++ {
+		for j, k := 0, cols; j < k; j, k = j+1, k-1 {
+			b.matrix[i][j], b.matrix[i][k] = b.matrix[i][k], b.matrix[i][j]
+		}
 	}
 }
 
@@ -86,7 +126,7 @@ func mergeElements(arr []int) []int {
 	return arr
 }
 
-func (b board) AddElement() {
+func (b *board) AddElement() {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	// generate new element
 	val := r.Int() % 100
@@ -135,7 +175,7 @@ func (b board) AddElement() {
    256     |     4     |   256     |    32
 ------------------------------------------------
 */
-func (b board) Display() {
+func (b *board) Display() {
 	fmt.Println(_clearScreenSequence)
 	//b.matrix = getRandom()
 	printHorizontal()

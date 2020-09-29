@@ -9,11 +9,13 @@ import (
 func main() {
 	fmt.Println("Getting started!")
 	g := game.New()
-	for i := 0; i < 10; i++ {
+	g.AddElement()
+	g.AddElement()
+	for true {
 		g.AddElement()
 		g.Display()
 		g.TakeInput()
-		g.Display()
+		//g.Display()
 		fmt.Println("new game")
 	}
 }
