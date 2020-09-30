@@ -6,10 +6,10 @@ import (
 	"github.com/eiannone/keyboard"
 )
 
-// getCahrKeystroke returns a key without pressing enter/return key
+// GetCahrKeystroke returns a key without pressing enter/return key
 // supported keys are [w a s d] and Arrow keys
 // below magical numbers are their key codes
-func getCharKeystroke() (Dir, error) {
+func GetCharKeystroke() (Dir, error) {
 	if err := keyboard.Open(); err != nil {
 		panic(err)
 	}

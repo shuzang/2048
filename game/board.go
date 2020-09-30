@@ -64,7 +64,7 @@ func (b *board) IsOver() bool {
 func (b *board) TakeInput() {
 	/* reader := bufio.NewReader(os.Stdin)
 	input, _ := reader.ReadString('\n') */
-	dir, err := getCharKeystroke()
+	dir, err := GetCharKeystroke()
 	if err != nil {
 		if errors.Is(err, errors.New("GameOverError")) {
 			b.over = true

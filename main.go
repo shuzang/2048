@@ -2,14 +2,18 @@ package main
 
 import (
 	"fmt"
-	"time"
+	"log"
 
 	"github.com/shuzang/2048/game"
 )
 
 func main() {
 	fmt.Println("Use {W A S D} or Arrow keys to move the board")
-	time.Sleep(time.Second * 2)
+	fmt.Printf("Press and key to start\n")
+	_, err := game.GetCharKeystroke()
+	if err != nil {
+		log.Fatalln("error while taking input to start the game")
+	}
 	g := game.New()
 
 	g.AddElement()
