@@ -21,5 +21,5 @@ func main() {
 		//g.Display()
 		//fmt.Println("new game")
 	}
-	fmt.Printf("****************** Game Over ******************")
+	fmt.Printf("******************* Game Over ******************")
 }

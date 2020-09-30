@@ -1,11 +1,11 @@
 package game
 
 import (
-	"bufio"
 	"fmt"
 	"math/rand"
-	"os"
 	"time"
+
+	"github.com/eiannone/keyboard"
 )
 
 // game board size
@@ -19,8 +19,19 @@ type Board interface {
 	IsOver()
 }
 
+type Dir int
+
+const (
+	UP Dir = iota
+	DOWN
+	LEFT
+	RIGHT
+	EXIT
+)
+
 type board struct {
 	matrix [][]int
+	over   bool
 }
 
 func (b *board) IsOver() bool {
@@ -32,26 +43,30 @@ func (b *board) IsOver() bool {
 			}
 		}
 	}
-	return emptyCount == 0
+	return emptyCount == 0 || b.over
 }
 
 func (b *board) TakeInput() {
 	/* 	var char rune
 	   	fmt.Scanf("%c", &char)
 	   	fmt.Printf("keyboar input is: %v\n", char) */
-	reader := bufio.NewReader(os.Stdin)
-	input, _ := reader.ReadString('\n')
-	switch input[0] {
-	case 'a', 37:
+	/* reader := bufio.NewReader(os.Stdin)
+	input, _ := reader.ReadString('\n') */
+	dir, _ := getCharKeystroke()
+	if dir == EXIT {
+		b.over = true
+	}
+	switch dir {
+	case LEFT:
 		b.moveLeft()
-	case 'd', 39:
+	case RIGHT:
 		b.moveRight()
-	case 'w', 38:
+	case UP:
 		b.moveUp()
-	case 's', 40:
+	case DOWN:
 		b.moveDown()
 	}
-	fmt.Printf("Input char is: %c(%v)\n", input[0], input[0])
+	//fmt.Printf("Input char is: %c(%v)\n", input[0], input[0])
 }
 
 func (b *board) moveLeft() {
@@ -251,5 +266,35 @@ func New() *board {
 	for i := 0; i < rows; i++ {
 		matrix[i] = make([]int, cols)
 	}
-	return &board{matrix}
+	return &board{matrix: matrix}
+}
+
+func getCharKeystroke() (Dir, error) {
+	if err := keyboard.Open(); err != nil {
+		panic(err)
+	}
+	defer func() {
+		_ = keyboard.Close()
+	}()
+	char, key, err := keyboard.GetKey()
+	ans := int(char)
+	if ans == 0 {
+		ans = int(key)
+	}
+	if err != nil {
+		return LEFT, err
+	}
+	switch ans {
+	case 119, 65517:
+		return UP, nil
+	case 97, 65515:
+		return LEFT, nil
+	case 115, 65516:
+		return DOWN, nil
+	case 100, 65514:
+		return RIGHT, nil
+	case 3:
+		return EXIT, nil
+	}
+	return LEFT, nil
 }

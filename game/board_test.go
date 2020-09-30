@@ -96,7 +96,7 @@ func TestLeftRotate90(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			b := &board{tt.fields.matrix}
+			b := &board{matrix: tt.fields.matrix}
 			b.leftRotate90()
 			if !reflect.DeepEqual(b.matrix, tt.want) {
 				t.Errorf("b.leftRotate90() = %v, want %v", b.matrix, tt.want)
@@ -135,7 +135,7 @@ func TestRightRotate90(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			b := &board{tt.fields.matrix}
+			b := &board{matrix: tt.fields.matrix}
 			if b.leftRotate90(); !reflect.DeepEqual(b.matrix, tt.want) {
 				t.Errorf("b.leftRotate90() = %v, want %v", b.matrix, tt.want)
 			}
