@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/eiannone/keyboard"
+	"github.com/fatih/color"
 )
 
 // game board size
@@ -31,8 +32,9 @@ const (
 )
 
 type board struct {
-	matrix [][]int
-	over   bool
+	matrix         [][]int
+	over           bool
+	newRow, newCol int
 }
 
 func (b *board) IsOver() bool {
@@ -192,6 +194,7 @@ func (b *board) AddElement() {
 			if b.matrix[i][j] == 0 {
 				index++
 				if index == elementCount {
+					b.newRow, b.newCol = i, j
 					b.matrix[i][j] = val
 					return
 				}
@@ -213,14 +216,18 @@ func (b *board) AddElement() {
 */
 func (b *board) Display() {
 	//fmt.Println(_clearScreenSequence)
-	//b.matrix = getRandom()
+	d := color.New(color.FgBlue, color.Bold)
 	printHorizontal()
 	for i := 0; i < len(b.matrix); i++ {
 		for j := 0; j < len(b.matrix[0]); j++ {
 			if b.matrix[i][j] == 0 {
 				fmt.Printf("%6s", "")
 			} else {
-				fmt.Printf("%6d", b.matrix[i][j])
+				if i == b.newRow && j == b.newCol {
+					d.Printf("%6d", b.matrix[i][j])
+				} else {
+					fmt.Printf("%6d", b.matrix[i][j])
+				}
 			}
 			fmt.Printf("%5s", "")
 			if j != len(b.matrix[0])-1 {
