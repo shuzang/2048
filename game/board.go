@@ -1,6 +1,7 @@
 package game
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"time"
@@ -26,7 +27,7 @@ const (
 	DOWN
 	LEFT
 	RIGHT
-	EXIT
+	NO_DIR
 )
 
 type board struct {
@@ -47,14 +48,20 @@ func (b *board) IsOver() bool {
 }
 
 func (b *board) TakeInput() {
-	/* 	var char rune
-	   	fmt.Scanf("%c", &char)
-	   	fmt.Printf("keyboar input is: %v\n", char) */
 	/* reader := bufio.NewReader(os.Stdin)
 	input, _ := reader.ReadString('\n') */
-	dir, _ := getCharKeystroke()
-	if dir == EXIT {
-		b.over = true
+	dir, err := getCharKeystroke()
+	if err != nil {
+		if errors.Is(err, errors.New("GameOverError")) {
+			b.over = true
+			return
+		} else {
+			panic(err)
+		}
+	}
+	//fmt.Printf("the dir is: %v \n", dir)
+	if dir == NO_DIR {
+		b.TakeInput()
 	}
 	switch dir {
 	case LEFT:
@@ -282,7 +289,7 @@ func getCharKeystroke() (Dir, error) {
 		ans = int(key)
 	}
 	if err != nil {
-		return LEFT, err
+		return NO_DIR, err
 	}
 	switch ans {
 	case 119, 65517:
@@ -294,7 +301,7 @@ func getCharKeystroke() (Dir, error) {
 	case 100, 65514:
 		return RIGHT, nil
 	case 3:
-		return EXIT, nil
+		return NO_DIR, errors.New("GameOverError")
 	}
-	return LEFT, nil
+	return NO_DIR, nil
 }
