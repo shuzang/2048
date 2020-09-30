@@ -21,5 +21,8 @@ func main() {
 		//g.Display()
 		//fmt.Println("new game")
 	}
-	fmt.Printf("******************* Game Over ******************")
+	fmt.Printf("******** Game Over ********\n")
+	max, total := g.CountScore()
+	fmt.Printf("Score: Max Tile Value:    %v \n", max)
+	fmt.Printf("Score: Total Tiles Value: %v \n", total)
 }

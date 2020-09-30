@@ -19,6 +19,7 @@ type Board interface {
 	AddElement()
 	TakeInput()
 	IsOver()
+	CountScore() (int, int)
 }
 
 type Dir int
@@ -35,6 +36,25 @@ type board struct {
 	matrix         [][]int
 	over           bool
 	newRow, newCol int
+}
+
+func (b *board) CountScore() (int, int) {
+	total, max := 0, 0
+	matrix := b.matrix
+	for i := 0; i < rows; i++ {
+		for j := 0; j < cols; j++ {
+			total += matrix[i][j]
+			max = maxInts(max, matrix[i][j])
+		}
+	}
+	return max, total
+}
+
+func maxInts(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
 
 func (b *board) IsOver() bool {
@@ -215,7 +235,7 @@ func (b *board) AddElement() {
 ------------------------------------------------
 */
 func (b *board) Display() {
-	//fmt.Println(_clearScreenSequence)
+	fmt.Println(_clearScreenSequence)
 	d := color.New(color.FgBlue, color.Bold)
 	printHorizontal()
 	for i := 0; i < len(b.matrix); i++ {
