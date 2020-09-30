@@ -2,13 +2,16 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/shuzang/2048/game"
 )
 
 func main() {
-	fmt.Println("Getting started!")
+	fmt.Println("Use {W A S D} or Arrow keys to move the board")
+	time.Sleep(time.Second * 2)
 	g := game.New()
+
 	g.AddElement()
 	g.AddElement()
 	for true {
@@ -18,8 +21,6 @@ func main() {
 		g.AddElement()
 		g.Display()
 		g.TakeInput()
-		//g.Display()
-		//fmt.Println("new game")
 	}
 	fmt.Printf("******** Game Over ********\n")
 	max, total := g.CountScore()

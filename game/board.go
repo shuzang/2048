@@ -6,13 +6,15 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/eiannone/keyboard"
 	"github.com/fatih/color"
 )
 
-// game board size
-const rows, cols = 4, 4
-const _clearScreenSequence = "\033[H\033[2J"
+const (
+	_rows, _cols         = 4, 4      // game board size
+	_clearScreenSequence = "\033[2J" // used to clear the screen
+	_probabilitySpace    = 100
+	_probabilityOfTwo    = 80
+)
 
 type Board interface {
 	Display()
@@ -21,16 +23,6 @@ type Board interface {
 	IsOver()
 	CountScore() (int, int)
 }
-
-type Dir int
-
-const (
-	UP Dir = iota
-	DOWN
-	LEFT
-	RIGHT
-	NO_DIR
-)
 
 type board struct {
 	matrix         [][]int
@@ -41,8 +33,8 @@ type board struct {
 func (b *board) CountScore() (int, int) {
 	total, max := 0, 0
 	matrix := b.matrix
-	for i := 0; i < rows; i++ {
-		for j := 0; j < cols; j++ {
+	for i := 0; i < _rows; i++ {
+		for j := 0; j < _cols; j++ {
 			total += matrix[i][j]
 			max = maxInts(max, matrix[i][j])
 		}
@@ -59,8 +51,8 @@ func maxInts(a, b int) int {
 
 func (b *board) IsOver() bool {
 	emptyCount := 0
-	for i := 0; i < rows; i++ {
-		for j := 0; j < cols; j++ {
+	for i := 0; i < _rows; i++ {
+		for j := 0; j < _cols; j++ {
 			if b.matrix[i][j] == 0 {
 				emptyCount++
 			}
@@ -95,100 +87,13 @@ func (b *board) TakeInput() {
 	case DOWN:
 		b.moveDown()
 	}
-	//fmt.Printf("Input char is: %c(%v)\n", input[0], input[0])
-}
-
-func (b *board) moveLeft() {
-	for i := 0; i < rows; i++ {
-		old := b.matrix[i]
-		b.matrix[i] = moveRow(old)
-		//fmt.Printf("updated row is: %v || old row is: %v\n", b.matrix[i], old)
-	}
-}
-
-func (b *board) moveRight() {
-	b.reverse()
-	b.moveLeft()
-	b.reverse()
-}
-
-func (b *board) moveUp() {
-	b.rightRotate90()
-	b.moveLeft()
-	b.leftRotate90()
-}
-
-func (b *board) moveDown() {
-	b.leftRotate90()
-	b.moveLeft()
-	b.rightRotate90()
-}
-
-func (b *board) rightRotate90() {
-	res := make([][]int, rows)
-	for i := 0; i < rows; i++ {
-		res[i] = make([]int, cols)
-	}
-	for i := 0; i < rows; i++ {
-		for j := 0; j < cols; j++ {
-			res[cols-j-1][i] = b.matrix[i][j]
-		}
-	}
-	b.matrix = res
-}
-
-func (b *board) leftRotate90() {
-	res := make([][]int, rows)
-	for i := 0; i < rows; i++ {
-		res[i] = make([]int, cols)
-	}
-	for i := 0; i < rows; i++ {
-		for j := 0; j < cols; j++ {
-			res[j][rows-i-1] = b.matrix[i][j]
-		}
-	}
-	b.matrix = res
-}
-
-func (b *board) reverse() {
-	for i := 0; i < rows; i++ {
-		for j, k := 0, cols-1; j < k; j, k = j+1, k-1 {
-			b.matrix[i][j], b.matrix[i][k] = b.matrix[i][k], b.matrix[i][j]
-		}
-	}
-}
-
-func moveRow(elems []int) []int {
-	index := 0
-	for i := 0; i < cols; i++ {
-		if elems[i] != 0 {
-			elems[index], elems[i] = elems[i], elems[index]
-			index++
-		}
-	}
-	return mergeElements(elems)
-}
-
-func mergeElements(arr []int) []int {
-	newArr := make([]int, len(arr))
-	newArr[0] = arr[0]
-	index := 0
-	for i := 1; i < len(arr); i++ {
-		if arr[i] == newArr[index] {
-			newArr[index] += arr[i]
-		} else {
-			index++
-			newArr[index] = arr[i]
-		}
-	}
-	return newArr
 }
 
 func (b *board) AddElement() {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	// generate new element
-	val := r.Int() % 100
-	if val < 70 {
+	val := r.Int() % _probabilitySpace
+	if val < _probabilityOfTwo {
 		val = 2
 	} else {
 		val = 4
@@ -196,8 +101,8 @@ func (b *board) AddElement() {
 
 	// count empty postions
 	emptyCount := 0
-	for i := 0; i < rows; i++ {
-		for j := 0; j < cols; j++ {
+	for i := 0; i < _rows; i++ {
+		for j := 0; j < _cols; j++ {
 			if b.matrix[i][j] == 0 {
 				emptyCount++
 			}
@@ -209,8 +114,8 @@ func (b *board) AddElement() {
 	index := 0
 
 	// fill
-	for i := 0; i < rows; i++ {
-		for j := 0; j < cols; j++ {
+	for i := 0; i < _rows; i++ {
+		for j := 0; j < _cols; j++ {
 			if b.matrix[i][j] == 0 {
 				index++
 				if index == elementCount {
@@ -260,6 +165,7 @@ func (b *board) Display() {
 	}
 }
 
+// printHorizontal prints a grid row
 func printHorizontal() {
 	for i := 0; i < 48; i++ {
 		fmt.Printf("-")
@@ -267,11 +173,12 @@ func printHorizontal() {
 	fmt.Println()
 }
 
+// printVertical prints a vertical grid element
 func printVertical() {
 	fmt.Printf("|")
 }
 
-func getRandom() [][]int {
+/* func getRandom() [][]int {
 	// Store all available numbers from 2 to 2048
 	arr := make([]int, 0)
 	arr = append(arr, 0)
@@ -282,53 +189,23 @@ func getRandom() [][]int {
 
 	// generate random numbers for init board
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	board := make([][]int, rows)
-	for i := 0; i < rows; i++ {
-		board[i] = make([]int, cols)
+	board := make([][]int, _rows)
+	for i := 0; i < _rows; i++ {
+		board[i] = make([]int, _cols)
 	}
-	for i := 0; i < rows; i++ {
-		for j := 0; j < cols; j++ {
+	for i := 0; i < _rows; i++ {
+		for j := 0; j < _cols; j++ {
 			elem := arr[r.Int()%size]
 			board[i][j] = elem
 		}
 	}
 	return board
-}
+} */
 
 func New() *board {
-	matrix := make([][]int, rows)
-	for i := 0; i < rows; i++ {
-		matrix[i] = make([]int, cols)
+	matrix := make([][]int, _rows)
+	for i := 0; i < _rows; i++ {
+		matrix[i] = make([]int, _cols)
 	}
 	return &board{matrix: matrix}
-}
-
-func getCharKeystroke() (Dir, error) {
-	if err := keyboard.Open(); err != nil {
-		panic(err)
-	}
-	defer func() {
-		_ = keyboard.Close()
-	}()
-	char, key, err := keyboard.GetKey()
-	ans := int(char)
-	if ans == 0 {
-		ans = int(key)
-	}
-	if err != nil {
-		return NO_DIR, err
-	}
-	switch ans {
-	case 119, 65517:
-		return UP, nil
-	case 97, 65515:
-		return LEFT, nil
-	case 115, 65516:
-		return DOWN, nil
-	case 100, 65514:
-		return RIGHT, nil
-	case 3:
-		return NO_DIR, errors.New("GameOverError")
-	}
-	return NO_DIR, nil
 }
