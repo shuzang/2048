@@ -70,28 +70,27 @@ func (b *board) reverse() {
 	}
 }
 
-func moveRow(elems []int) []int {
+func moveRow(row []int) []int {
 	index := 0
-	for i := 0; i < _cols; i++ {
-		if elems[i] != 0 {
-			elems[index], elems[i] = elems[i], elems[index]
+	for i := 0; i < len(row); i++ {
+		if row[i] != 0 {
+			row[index], row[i] = row[i], row[index]
 			index++
 		}
 	}
-	return mergeElements(elems)
-}
-
-func mergeElements(arr []int) []int {
-	newArr := make([]int, len(arr))
-	newArr[0] = arr[0]
-	index := 0
-	for i := 1; i < len(arr); i++ {
-		if arr[i] == newArr[index] {
-			newArr[index] += arr[i]
-		} else {
-			index++
-			newArr[index] = arr[i]
+	for i := 0; i < len(row)-1; i++ {
+		if row[i] == row[i+1] {
+			row[i] += row[i+1]
+			row[i+1] = 0
+			i++
 		}
 	}
-	return newArr
+	index = 0
+	for i := 0; i < len(row); i++ {
+		if row[i] != 0 {
+			row[index], row[i] = row[i], row[index]
+			index++
+		}
+	}
+	return row
 }
