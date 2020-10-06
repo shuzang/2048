@@ -1,19 +1,19 @@
 package game
 
 import (
-	"errors"
 	"fmt"
 	"math/rand"
+	"os"
+	"os/exec"
 	"time"
 
 	"github.com/fatih/color"
 )
 
 const (
-	_rows, _cols         = 4, 4      // game board size
-	_clearScreenSequence = "\033[2J" // used to clear the screen
-	_probabilitySpace    = 100
-	_probabilityOfTwo    = 80
+	_rows, _cols      = 4, 4 // game board size
+	_probabilitySpace = 100
+	_probabilityOfTwo = 80
 )
 
 type Board interface {
@@ -66,15 +66,11 @@ func (b *board) TakeInput() {
 	input, _ := reader.ReadString('\n') */
 	dir, err := GetCharKeystroke()
 	if err != nil {
-		if errors.Is(err, errors.New("GameOverError")) {
-			b.over = true
-			return
-		} else {
-			panic(err)
-		}
+		fmt.Printf(err.Error())
 	}
 	//fmt.Printf("the dir is: %v \n", dir)
-	if dir == NO_DIR {
+	if dir == ERROR_KEY {
+		fmt.Println("Error key, please press again!")
 		b.TakeInput()
 	}
 	switch dir {
@@ -86,6 +82,9 @@ func (b *board) TakeInput() {
 		b.moveUp()
 	case DOWN:
 		b.moveDown()
+	case QUIT:
+		fmt.Println("You press ESC, game exit!")
+		b.over = true
 	}
 }
 
@@ -129,37 +128,28 @@ func (b *board) AddElement() {
 }
 
 /* Display board as follows
-------------------------------------------------
-  2048     |    16     |  1024     |    16
-------------------------------------------------
-   128     |    16     |    16     |   128
-------------------------------------------------
-    32     |   512     |   256     |    64
-------------------------------------------------
-   256     |     4     |   256     |    32
-------------------------------------------------
-*/
+ */
 func (b *board) Display() {
-	fmt.Println(_clearScreenSequence)
-	d := color.New(color.FgBlue, color.Bold)
+	// clear screen, but only works on windows
+	cmd := exec.Command("cmd", "/c", "cls")
+	cmd.Stdout = os.Stdout
+	cmd.Run()
+	d := color.New(color.FgCyan, color.Bold)
 	printHorizontal()
 	for i := 0; i < len(b.matrix); i++ {
+		printVertical()
 		for j := 0; j < len(b.matrix[0]); j++ {
 			if b.matrix[i][j] == 0 {
-				fmt.Printf("%6s", "")
+				fmt.Printf("%7s", "")
 			} else {
 				if i == b.newRow && j == b.newCol {
-					d.Printf("%6d", b.matrix[i][j])
+					d.Printf("%4d%3s", b.matrix[i][j], "")
 				} else {
-					fmt.Printf("%6d", b.matrix[i][j])
+					fmt.Printf("%4d%3s", b.matrix[i][j], "")
 				}
 			}
-			fmt.Printf("%5s", "")
-			if j != len(b.matrix[0])-1 {
-				printVertical()
-			}
+			printVertical()
 		}
-		fmt.Printf("%5s", "")
 		fmt.Println()
 		printHorizontal()
 	}
@@ -167,7 +157,7 @@ func (b *board) Display() {
 
 // printHorizontal prints a grid row
 func printHorizontal() {
-	for i := 0; i < 48; i++ {
+	for i := 0; i < 33; i++ {
 		fmt.Printf("-")
 	}
 	fmt.Println()

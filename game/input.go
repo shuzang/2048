@@ -10,31 +10,38 @@ import (
 // supported keys are [w a s d] and Arrow keys
 // below magical numbers are their key codes
 func GetCharKeystroke() (Dir, error) {
-	if err := keyboard.Open(); err != nil {
-		panic(err)
-	}
-	defer func() {
-		_ = keyboard.Close()
-	}()
-	char, key, err := keyboard.GetKey()
-	ans := int(char)
-	if ans == 0 {
-		ans = int(key)
-	}
+	char, key, err := keyboard.GetSingleKey()
 	if err != nil {
-		return NO_DIR, err
+		return ERROR_KEY, err
 	}
-	switch ans {
-	case 119, 65517:
-		return UP, nil
-	case 97, 65515:
-		return LEFT, nil
-	case 115, 65516:
-		return DOWN, nil
-	case 100, 65514:
-		return RIGHT, nil
-	case 3:
-		return NO_DIR, errors.New("GameOverError")
+	//fmt.Printf("You pressed: %c, key %X\r\n", char, key)
+	if int(char) == 0 {
+		switch key {
+		case keyboard.KeyArrowUp:
+			return UP, nil
+		case keyboard.KeyArrowDown:
+			return DOWN, nil
+		case keyboard.KeyArrowLeft:
+			return LEFT, nil
+		case keyboard.KeyArrowRight:
+			return RIGHT, nil
+		case keyboard.KeyEsc:
+			return QUIT, nil
+		default:
+			return ERROR_KEY, errors.New("GameOverError")
+		}
+	} else {
+		switch char {
+		case 119:
+			return UP, nil
+		case 97:
+			return LEFT, nil
+		case 115:
+			return DOWN, nil
+		case 100:
+			return RIGHT, nil
+		default:
+			return ERROR_KEY, errors.New("GameOverError")
+		}
 	}
-	return NO_DIR, nil
 }

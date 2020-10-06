@@ -7,14 +7,14 @@ const (
 	DOWN
 	LEFT
 	RIGHT
-	NO_DIR
+	QUIT
+	ERROR_KEY
 )
 
 func (b *board) moveLeft() {
 	for i := 0; i < _rows; i++ {
 		old := b.matrix[i]
 		b.matrix[i] = moveRow(old)
-		//fmt.Printf("updated row is: %v || old row is: %v\n", b.matrix[i], old)
 	}
 }
 
