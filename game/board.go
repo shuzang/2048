@@ -19,14 +19,13 @@ const (
 type Board interface {
 	Display()
 	AddElement()
-	TakeInput()
+	TakeInput() bool
 	IsOver()
 	CountScore() (int, int)
 }
 
 type board struct {
 	matrix         [][]int
-	over           bool
 	newRow, newCol int
 }
 
@@ -58,10 +57,10 @@ func (b *board) IsOver() bool {
 			}
 		}
 	}
-	return emptyCount == 0 || b.over
+	return emptyCount == 0
 }
 
-func (b *board) TakeInput() {
+func (b *board) TakeInput() bool {
 	/* reader := bufio.NewReader(os.Stdin)
 	input, _ := reader.ReadString('\n') */
 	dir, err := GetCharKeystroke()
@@ -84,8 +83,9 @@ func (b *board) TakeInput() {
 		b.moveDown()
 	case QUIT:
 		fmt.Println("You press ESC, game exit!")
-		b.over = true
+		return true
 	}
+	return false
 }
 
 func (b *board) AddElement() {

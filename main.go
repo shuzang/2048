@@ -25,7 +25,10 @@ func main() {
 		}
 		g.AddElement()
 		g.Display()
-		g.TakeInput()
+		res := g.TakeInput()
+		if res {
+			return
+		}
 	}
 	fmt.Printf("******** Game Over ********\n")
 	max, total := g.CountScore()
