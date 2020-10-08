@@ -1,37 +1,48 @@
 package game
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"os"
 	"os/exec"
 	"time"
 
+	"github.com/eiannone/keyboard"
 	"github.com/fatih/color"
 )
 
 const (
-	_rows, _cols      = 4, 4 // game board size
-	_probabilitySpace = 100
-	_probabilityOfTwo = 80
+	_rows, _cols = 4, 4
 )
+
+type Key int
+
+const (
+	UP Key = iota
+	DOWN
+	LEFT
+	RIGHT
+	QUIT
+	ERROR_KEY
+)
+
+type board struct {
+	board  [][]int
+	nx, ny int
+}
 
 type Board interface {
 	Display()
 	AddElement()
 	TakeInput() bool
-	IsOver()
+	IsOver() bool
 	CountScore() (int, int)
-}
-
-type board struct {
-	matrix         [][]int
-	newRow, newCol int
 }
 
 func (b *board) CountScore() (int, int) {
 	total, max := 0, 0
-	matrix := b.matrix
+	matrix := b.board
 	for i := 0; i < _rows; i++ {
 		for j := 0; j < _cols; j++ {
 			total += matrix[i][j]
@@ -49,153 +60,163 @@ func maxInts(a, b int) int {
 }
 
 func (b *board) IsOver() bool {
-	emptyCount := 0
+	blank := 0
 	for i := 0; i < _rows; i++ {
 		for j := 0; j < _cols; j++ {
-			if b.matrix[i][j] == 0 {
-				emptyCount++
+			if b.board[i][j] == 0 {
+				blank++
 			}
 		}
 	}
-	return emptyCount == 0
+	return blank == 0
 }
 
 func (b *board) TakeInput() bool {
-	/* reader := bufio.NewReader(os.Stdin)
-	input, _ := reader.ReadString('\n') */
-	dir, err := GetCharKeystroke()
+	key, err := GetKeyStrokes()
 	if err != nil {
 		fmt.Printf(err.Error())
 	}
-	//fmt.Printf("the dir is: %v \n", dir)
-	if dir == ERROR_KEY {
-		fmt.Println("Error key, please press again!")
+	if key == ERROR_KEY {
 		b.TakeInput()
 	}
-	switch dir {
-	case LEFT:
-		b.moveLeft()
-	case RIGHT:
-		b.moveRight()
+	switch key {
 	case UP:
 		b.moveUp()
 	case DOWN:
 		b.moveDown()
+	case LEFT:
+		b.moveLeft()
+	case RIGHT:
+		b.moveRight()
 	case QUIT:
 		fmt.Println("You press ESC, game exit!")
-		return true
+		return false
 	}
-	return false
+	return true
+}
+
+func GetKeyStrokes() (Key, error) {
+	char, key, err := keyboard.GetSingleKey()
+	if err != nil {
+		return ERROR_KEY, err
+	}
+	//fmt.Printf("You pressed: %c, key %X\r\n", char, key)
+	if int(char) == 0 {
+		switch key {
+		case keyboard.KeyArrowUp:
+			return UP, nil
+		case keyboard.KeyArrowDown:
+			return DOWN, nil
+		case keyboard.KeyArrowLeft:
+			return LEFT, nil
+		case keyboard.KeyArrowRight:
+			return RIGHT, nil
+		case keyboard.KeyEsc:
+			return QUIT, nil
+		default:
+			return ERROR_KEY, errors.New("Key input error, please press again!")
+		}
+	} else {
+		switch char {
+		case 119:
+			return UP, nil
+		case 97:
+			return LEFT, nil
+		case 115:
+			return DOWN, nil
+		case 100:
+			return RIGHT, nil
+		default:
+			return ERROR_KEY, errors.New("Key input error, please press again!")
+		}
+	}
 }
 
 func (b *board) AddElement() {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	// generate new element
-	val := r.Int() % _probabilitySpace
-	if val < _probabilityOfTwo {
-		val = 2
+	rand.Seed(time.Now().UnixNano())
+	// get random matrix index
+	index := make([][2]int, 0)
+	for i := 0; i < _rows; i++ {
+		for j := 0; j < _cols; j++ {
+			if b.board[i][j] == 0 {
+				index = append(index, [2]int{i, j})
+			}
+		}
+	}
+	next := rand.Int() % len(index)
+	nx, ny := index[next][0], index[next][1]
+	// get random number
+	var number int
+	if rand.Int()%100 < 80 {
+		number = 2
 	} else {
-		val = 4
+		number = 4
 	}
-
-	// count empty postions
-	emptyCount := 0
-	for i := 0; i < _rows; i++ {
-		for j := 0; j < _cols; j++ {
-			if b.matrix[i][j] == 0 {
-				emptyCount++
-			}
-		}
-	}
-
-	// generate the element position to be filled
-	elementCount := r.Int()%emptyCount + 1
-	index := 0
-
-	// fill
-	for i := 0; i < _rows; i++ {
-		for j := 0; j < _cols; j++ {
-			if b.matrix[i][j] == 0 {
-				index++
-				if index == elementCount {
-					b.newRow, b.newCol = i, j
-					b.matrix[i][j] = val
-					return
-				}
-			}
-		}
-	}
+	// filling
+	b.nx, b.ny = nx, ny
+	b.board[nx][ny] = number
 }
 
-/* Display board as follows
- */
 func (b *board) Display() {
 	// clear screen, but only works on windows
 	cmd := exec.Command("cmd", "/c", "cls")
 	cmd.Stdout = os.Stdout
 	cmd.Run()
-	d := color.New(color.FgCyan, color.Bold)
-	printHorizontal()
-	for i := 0; i < len(b.matrix); i++ {
-		printVertical()
-		for j := 0; j < len(b.matrix[0]); j++ {
-			if b.matrix[i][j] == 0 {
+	c := color.New(color.FgCyan, color.Bold)
+	printHorizontalLine()
+	for i := 0; i < _rows; i++ {
+		printVerticalLine()
+		for j := 0; j < _cols; j++ {
+			if b.board[i][j] == 0 {
 				fmt.Printf("%7s", "")
+			} else if i == b.nx && j == b.ny {
+				c.Printf("%4d%3s", b.board[i][j], "")
 			} else {
-				if i == b.newRow && j == b.newCol {
-					d.Printf("%4d%3s", b.matrix[i][j], "")
-				} else {
-					fmt.Printf("%4d%3s", b.matrix[i][j], "")
-				}
+				fmt.Printf("%4d%3s", b.board[i][j], "")
 			}
-			printVertical()
+
+			printVerticalLine()
 		}
 		fmt.Println()
-		printHorizontal()
+		printHorizontalLine()
 	}
+
 }
 
-// printHorizontal prints a grid row
-func printHorizontal() {
+func printHorizontalLine() {
 	for i := 0; i < 33; i++ {
 		fmt.Printf("-")
 	}
 	fmt.Println()
 }
 
-// printVertical prints a vertical grid element
-func printVertical() {
+func printVerticalLine() {
 	fmt.Printf("|")
 }
 
-/* func getRandom() [][]int {
-	// Store all available numbers from 2 to 2048
-	arr := make([]int, 0)
-	arr = append(arr, 0)
-	for val := 2; val <= 2048; val *= 2 {
-		arr = append(arr, val)
+/* func generate(matrix [][]int) [][]int {
+	// Generate a number pool
+	nums := make([]int, 0)
+	nums = append(nums, 0)
+	for i := 2; i <= 2048; i *= 2 {
+		nums = append(nums, i)
 	}
-	size := len(arr)
 
-	// generate random numbers for init board
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	board := make([][]int, _rows)
-	for i := 0; i < _rows; i++ {
-		board[i] = make([]int, _cols)
-	}
+	// fill the matrix using random number
+	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < _rows; i++ {
 		for j := 0; j < _cols; j++ {
-			elem := arr[r.Int()%size]
-			board[i][j] = elem
+			matrix[i][j] = nums[rand.Int()%len(nums)]
 		}
 	}
-	return board
+
+	return matrix
 } */
 
-func New() *board {
+func NewBoard() *board {
 	matrix := make([][]int, _rows)
 	for i := 0; i < _rows; i++ {
 		matrix[i] = make([]int, _cols)
 	}
-	return &board{matrix: matrix}
+	return &board{board: matrix}
 }

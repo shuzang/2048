@@ -1,71 +1,60 @@
 package game
 
-type Dir int
-
-const (
-	UP Dir = iota
-	DOWN
-	LEFT
-	RIGHT
-	QUIT
-	ERROR_KEY
-)
-
 func (b *board) moveLeft() {
 	for i := 0; i < _rows; i++ {
-		old := b.matrix[i]
-		b.matrix[i] = moveRow(old)
+		old := b.board[i]
+		b.board[i] = moveRow(old)
 	}
 }
 
 func (b *board) moveRight() {
-	b.reverse()
+	b.Reverse()
 	b.moveLeft()
-	b.reverse()
+	b.Reverse()
 }
 
 func (b *board) moveUp() {
-	b.rightRotate90()
-	b.moveLeft()
 	b.leftRotate90()
+	b.moveLeft()
+	b.rightRotate90()
 }
 
 func (b *board) moveDown() {
-	b.leftRotate90()
-	b.moveLeft()
 	b.rightRotate90()
+	b.moveLeft()
+	b.leftRotate90()
 }
 
 func (b *board) rightRotate90() {
-	res := make([][]int, _rows)
+	matrix := make([][]int, _rows)
 	for i := 0; i < _rows; i++ {
-		res[i] = make([]int, _cols)
+		matrix[i] = make([]int, _cols)
 	}
 	for i := 0; i < _rows; i++ {
 		for j := 0; j < _cols; j++ {
-			res[_cols-j-1][i] = b.matrix[i][j]
+			matrix[j][_cols-1-i] = b.board[i][j]
 		}
 	}
-	b.matrix = res
+	b.board = matrix
 }
 
 func (b *board) leftRotate90() {
-	res := make([][]int, _rows)
+	matrix := make([][]int, _rows)
 	for i := 0; i < _rows; i++ {
-		res[i] = make([]int, _cols)
+		matrix[i] = make([]int, _cols)
 	}
 	for i := 0; i < _rows; i++ {
 		for j := 0; j < _cols; j++ {
-			res[j][_rows-i-1] = b.matrix[i][j]
+			matrix[_cols-1-j][i] = b.board[i][j]
 		}
 	}
-	b.matrix = res
+	b.board = matrix
 }
 
-func (b *board) reverse() {
+func (b *board) Reverse() {
 	for i := 0; i < _rows; i++ {
 		for j, k := 0, _cols-1; j < k; j, k = j+1, k-1 {
-			b.matrix[i][j], b.matrix[i][k] = b.matrix[i][k], b.matrix[i][j]
+			b.board[i][j], b.board[i][k] = b.board[i][k], b.board[i][j]
 		}
 	}
 }

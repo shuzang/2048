@@ -5,6 +5,47 @@ import (
 	"testing"
 )
 
+func TestMoveRow(t *testing.T) {
+	tests := []struct {
+		name  string
+		input []int
+		want  []int
+	}{
+		{
+			name:  "one",
+			input: []int{2, 2, 0, 0},
+			want:  []int{4, 0, 0, 0},
+		},
+		{
+			name:  "two",
+			input: []int{2, 2, 4, 8},
+			want:  []int{4, 4, 8, 0},
+		},
+		{
+			name:  "three",
+			input: []int{2, 4, 4, 8},
+			want:  []int{2, 8, 8, 0},
+		},
+		{
+			name:  "four",
+			input: []int{2, 4, 8, 8},
+			want:  []int{2, 4, 16, 0},
+		},
+		{
+			name:  "five",
+			input: []int{2, 2, 2, 2},
+			want:  []int{4, 4, 0, 0},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := moveRow(tt.input); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("moveRow() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestLeftRotate90(t *testing.T) {
 	type fields struct {
 		matrix [][]int
@@ -35,10 +76,10 @@ func TestLeftRotate90(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			b := &board{matrix: tt.fields.matrix}
+			b := &board{board: tt.fields.matrix}
 			b.leftRotate90()
-			if !reflect.DeepEqual(b.matrix, tt.want) {
-				t.Errorf("b.leftRotate90() = %v, want %v", b.matrix, tt.want)
+			if !reflect.DeepEqual(b.board, tt.want) {
+				t.Errorf("b.leftRotate90() = %v, want %v", b.board, tt.want)
 			}
 		})
 	}
@@ -74,9 +115,9 @@ func TestRightRotate90(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			b := &board{matrix: tt.fields.matrix}
-			if b.leftRotate90(); !reflect.DeepEqual(b.matrix, tt.want) {
-				t.Errorf("b.leftRotate90() = %v, want %v", b.matrix, tt.want)
+			b := &board{board: tt.fields.matrix}
+			if b.rightRotate90(); !reflect.DeepEqual(b.board, tt.want) {
+				t.Errorf("b.rightRotate90() = %v, want %v", b.board, tt.want)
 			}
 		})
 	}
